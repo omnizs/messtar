@@ -8,7 +8,6 @@ pub const PROTOCOL_VERSION: u8 = 2;
 pub const MAX_PACKET_AGE_SECS: u64 = 30;
 pub const PADDING_BLOCK: usize = 64;
 
-// bincode 1.x uses serde — no Encode/Decode needed
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 pub enum PacketType {
     Handshake,
@@ -44,7 +43,17 @@ impl MesstarPacket {
             .duration_since(UNIX_EPOCH)
             .unwrap()
             .as_secs();
-        Self { version: PROTOCOL_VERSION, packet_type, session_id, seq_num, timestamp, nonce, payload, tag, pad_len }
+        Self {
+            version: PROTOCOL_VERSION,
+            packet_type,
+            session_id,
+            seq_num,
+            timestamp,
+            nonce,
+            payload,
+            tag,
+            pad_len,
+        }
     }
 
     pub fn is_fresh(&self) -> bool {

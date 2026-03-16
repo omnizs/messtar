@@ -8,7 +8,7 @@ use messtar::{
 };
 
 fn main() {
-    println!("=== Messtar Protocol v0.2.1 ===\n");
+    println!("=== Messtar Protocol v0.3.1 ===\n");
 
     let alice_id = Identity::generate();
     let bob_id   = Identity::generate();
@@ -31,8 +31,8 @@ fn main() {
 
     println!("✅ Ed25519 signatures verified");
 
-    let alice_keys = alice_hs.derive_keys(bob_pub, true);   // initiator
-    let bob_keys   = bob_hs.derive_keys(alice_pub, false);  // responder
+    let alice_keys = alice_hs.derive_keys(bob_pub, true);
+    let bob_keys   = bob_hs.derive_keys(alice_pub, false);
     println!("✅ Separate keys successfully negotiated\n");
 
     let alice_session = Session::new(alice_keys);
@@ -47,7 +47,6 @@ fn main() {
     for msg in messages {
         let packet   = alice_session.send(msg.as_bytes()).unwrap();
         let received = bob_session.receive(&packet).unwrap();
-
         println!("📨 Alice → seq={} pad={}b payload={}b",
                  packet.seq_num, packet.pad_len, packet.payload.len());
         println!("📩 Bob   ← {:?}\n",
@@ -70,5 +69,5 @@ fn main() {
         Err(e) => println!("✅ Rejected: {e}"),
     }
 
-    println!("\n✅ Messtar v0.2.1 — everything works!");
+    println!("\n✅ Messtar v0.3.1 — everything works!");
 }

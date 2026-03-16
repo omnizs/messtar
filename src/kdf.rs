@@ -21,6 +21,8 @@ pub struct SessionKeys {
 
 impl SessionKeys {
     pub fn derive(master: &[u8], salt: [u8; 16], initiator: bool) -> Self {
+        // Alice (initiator): send=a2b, recv=b2a
+        // Bob  (!initiator): send=b2a, recv=a2b
         let (send_label, recv_label) = if initiator {
             (b"messtar-a2b-v2" as &[u8], b"messtar-b2a-v2" as &[u8])
         } else {

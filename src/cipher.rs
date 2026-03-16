@@ -5,7 +5,7 @@ use aes_gcm::{
     aead::{Aead, KeyInit},
     Aes256Gcm, Key, Nonce,
 };
-use rand::{rngs::OsRng, RngCore};
+use rand_core::{OsRng, RngCore};
 use crate::error::{MesstarError, Result};
 
 pub fn generate_nonce() -> [u8; 12] {

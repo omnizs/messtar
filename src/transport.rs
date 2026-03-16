@@ -38,16 +38,14 @@ pub struct MesstarConn {
 impl MesstarConn {
     pub async fn send(&mut self, data: &[u8]) -> Result<()> {
         let packet  = self.session.send(data)?;
-        // bincode 1.x: serialize via serde
-        let encoded = bincode::serialize(&packet)
+        let encoded = postcard::to_allocvec(&packet)
             .map_err(|_| MesstarError::InvalidPacket)?;
         write_frame(&mut self.stream, &encoded).await
     }
 
     pub async fn recv(&mut self) -> Result<Vec<u8>> {
         let frame = read_frame(&mut self.stream).await?;
-        // bincode 1.x: deserialize via serde
-        let packet: MesstarPacket = bincode::deserialize(&frame)
+        let packet: MesstarPacket = postcard::from_bytes(&frame)
             .map_err(|_| MesstarError::InvalidPacket)?;
         self.session.receive(&packet)
     }

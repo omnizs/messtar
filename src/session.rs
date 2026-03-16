@@ -3,7 +3,7 @@
 
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Mutex;
-use rand::{rngs::OsRng, RngCore};
+use rand_core::{OsRng, RngCore};
 use zeroize::Zeroize;
 
 use crate::{

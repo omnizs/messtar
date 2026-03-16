@@ -2,7 +2,7 @@
 // Copyright (C) 2026 omnizs — Messtar Protocol
 
 use ed25519_dalek::{Signature, Signer, SigningKey, Verifier, VerifyingKey};
-use rand::rngs::OsRng;
+use rand_core::OsRng;
 use crate::error::{MesstarError, Result};
 
 pub struct Identity {

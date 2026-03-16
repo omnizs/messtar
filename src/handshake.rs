@@ -5,7 +5,7 @@ use hkdf::Hkdf;
 use sha2::Sha256;
 use x25519_dalek::{EphemeralSecret, PublicKey};
 use zeroize::Zeroizing;
-use rand::rngs::OsRng;
+use rand_core::OsRng;
 use crate::kdf::SessionKeys;
 
 pub struct Handshake {
@@ -29,6 +29,7 @@ impl Handshake {
         hkdf.expand(b"messtar-master-v2", master.as_mut())
             .expect("HKDF master failed");
 
+        // Salt derived deterministically — identical on both sides
         let mut salt = [0u8; 16];
         hkdf.expand(b"messtar-salt-v2", &mut salt)
             .expect("HKDF salt failed");
