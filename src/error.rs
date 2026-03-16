@@ -1,21 +1,30 @@
+// SPDX-License-Identifier: GPL-3.0
+// Copyright (C) 2026 omnizs — Messtar Protocol
+
 use thiserror::Error;
 
 #[derive(Debug, Error)]
 pub enum MesstarError {
-    #[error("Ошибка шифрования: {0}")]
+    #[error("Encryption failed: {0}")]
     EncryptionFailed(String),
 
-    #[error("Ошибка дешифрования: неверный ключ или данные повреждены")]
+    #[error("Decryption failed: invalid key or corrupted data")]
     DecryptionFailed,
 
-    #[error("Ошибка рукопожатия")]
+    #[error("Handshake failed")]
     HandshakeFailed,
 
-    #[error("Недопустимый пакет")]
+    #[error("Invalid packet")]
     InvalidPacket,
 
-    #[error("Сессия не активна")]
+    #[error("Session expired")]
     SessionExpired,
+
+    #[error("Replay attack detected")]
+    ReplayDetected,
+
+    #[error("Packet too old")]
+    PacketExpired,
 }
 
 pub type Result<T> = std::result::Result<T, MesstarError>;

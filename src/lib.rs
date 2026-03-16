@@ -1,21 +1,13 @@
-pub mod error;
-pub mod packet;
-pub mod handshake;
+// SPDX-License-Identifier: GPL-3.0
+// Copyright (C) 2026 omnizs — Messtar Protocol
+
 pub mod cipher;
-pub mod session;
+pub mod error;
+pub mod handshake;
 pub mod identity;
+pub mod kdf;
+pub mod packet;
+pub mod session;
 
-pub fn add(left: u64, right: u64) -> u64 {
-    left + right
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
-    }
-}
+#[cfg(feature = "transport")]
+pub mod transport;
