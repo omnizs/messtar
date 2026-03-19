@@ -38,7 +38,7 @@ impl Session {
         let seq      = self.send_counter.fetch_add(1, Ordering::SeqCst);
         let mut keys = self.keys.lock().unwrap();
 
-        if seq > 0 && seq % RATCHET_INTERVAL == 0 {
+        if seq > 0 && seq.is_multiple_of(RATCHET_INTERVAL) {
             keys.ratchet();
         }
 
