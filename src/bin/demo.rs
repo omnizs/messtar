@@ -8,7 +8,7 @@ use messtar::{
 };
 
 fn main() {
-    println!("=== Messtar Protocol v0.3.1 ===\n");
+    println!("=== Messtar Protocol v0.4.0 ===\n");
 
     let alice_id = Identity::generate();
     let bob_id   = Identity::generate();
