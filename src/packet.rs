@@ -18,26 +18,26 @@ pub enum PacketType {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct MesstarPacket {
-    pub version:     u8,
+    pub version: u8,
     pub packet_type: PacketType,
-    pub session_id:  [u8; 16],
-    pub seq_num:     u64,
-    pub timestamp:   u64,
-    pub nonce:       [u8; 12],
-    pub payload:     Vec<u8>,
-    pub tag:         [u8; 16],
-    pub pad_len:     u8,
+    pub session_id: [u8; 16],
+    pub seq_num: u64,
+    pub timestamp: u64,
+    pub nonce: [u8; 12],
+    pub payload: Vec<u8>,
+    pub tag: [u8; 16],
+    pub pad_len: u8,
 }
 
 impl MesstarPacket {
     pub fn new(
         packet_type: PacketType,
-        session_id:  [u8; 16],
-        seq_num:     u64,
-        nonce:       [u8; 12],
-        payload:     Vec<u8>,
-        tag:         [u8; 16],
-        pad_len:     u8,
+        session_id: [u8; 16],
+        seq_num: u64,
+        nonce: [u8; 12],
+        payload: Vec<u8>,
+        tag: [u8; 16],
+        pad_len: u8,
     ) -> Self {
         let timestamp = SystemTime::now()
             .duration_since(UNIX_EPOCH)

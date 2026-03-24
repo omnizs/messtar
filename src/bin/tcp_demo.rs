@@ -1,7 +1,10 @@
 // SPDX-License-Identifier: GPL-3.0
 // Copyright (C) 2026 omnizs — Messtar Protocol
 
-use messtar::{identity::Identity, transport::{MesstarClient, MesstarServer}};
+use messtar::{
+    identity::Identity,
+    transport::{MesstarClient, MesstarServer},
+};
 use tokio::time::{sleep, Duration};
 
 #[tokio::main]
@@ -28,18 +31,23 @@ async fn main() {
         loop {
             match conn.recv().await {
                 Ok(msg) => {
-                    let text  = String::from_utf8_lossy(&msg);
+                    let text = String::from_utf8_lossy(&msg);
                     println!("📩 Server received: {text:?}");
                     conn.send(format!("echo: {text}").as_bytes()).await.unwrap();
                 }
-                Err(e) => { println!("🔴 {e}"); break; }
+                Err(e) => {
+                    println!("🔴 {e}");
+                    break;
+                }
             }
         }
     });
 
     sleep(Duration::from_millis(100)).await;
 
-    let mut client = MesstarClient::connect("127.0.0.1:7878", &client_identity).await.unwrap();
+    let mut client = MesstarClient::connect("127.0.0.1:7878", &client_identity)
+        .await
+        .unwrap();
 
     // Verify server is who we expect
     assert_eq!(client.peer_identity.as_bytes(), server_vk.as_bytes());

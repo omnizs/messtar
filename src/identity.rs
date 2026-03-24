@@ -1,20 +1,23 @@
 // SPDX-License-Identifier: GPL-3.0
 // Copyright (C) 2026 omnizs — Messtar Protocol
 
+use crate::error::{MesstarError, Result};
 use ed25519_dalek::{Signature, Signer, SigningKey, Verifier, VerifyingKey};
 use rand_core::OsRng;
-use crate::error::{MesstarError, Result};
 
 pub struct Identity {
-    pub signing_key:   SigningKey,
+    pub signing_key: SigningKey,
     pub verifying_key: VerifyingKey,
 }
 
 impl Identity {
     pub fn generate() -> Self {
-        let signing_key   = SigningKey::generate(&mut OsRng);
+        let signing_key = SigningKey::generate(&mut OsRng);
         let verifying_key = signing_key.verifying_key();
-        Self { signing_key, verifying_key }
+        Self {
+            signing_key,
+            verifying_key,
+        }
     }
 
     pub fn sign_public_key(&self, x25519_pub: &[u8; 32]) -> [u8; 64] {
@@ -24,8 +27,8 @@ impl Identity {
 
     pub fn verify_public_key(
         their_verifying_key: &VerifyingKey,
-        x25519_pub:          &[u8; 32],
-        signature:           &[u8; 64],
+        x25519_pub: &[u8; 32],
+        signature: &[u8; 64],
     ) -> Result<()> {
         let sig = Signature::from_bytes(signature);
         their_verifying_key

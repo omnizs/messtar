@@ -1,21 +1,21 @@
 // SPDX-License-Identifier: GPL-3.0
 // Copyright (C) 2026 omnizs — Messtar Protocol
 
+use crate::kdf::SessionKeys;
 use hkdf::Hkdf;
+use rand_core::OsRng;
 use sha2::Sha256;
 use x25519_dalek::{EphemeralSecret, PublicKey};
 use zeroize::Zeroizing;
-use rand_core::OsRng;
-use crate::kdf::SessionKeys;
 
 pub struct Handshake {
-    secret:         EphemeralSecret,
+    secret: EphemeralSecret,
     pub public_key: PublicKey,
 }
 
 impl Handshake {
     pub fn new() -> Self {
-        let secret     = EphemeralSecret::random_from_rng(OsRng);
+        let secret = EphemeralSecret::random_from_rng(OsRng);
         let public_key = PublicKey::from(&secret);
         Self { secret, public_key }
     }

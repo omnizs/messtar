@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0
 // Copyright (C) 2026 omnizs — Messtar Protocol
 
+use rand_core::{OsRng, RngCore};
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Mutex;
-use rand_core::{OsRng, RngCore};
 use zeroize::Zeroize;
 
 use crate::{
@@ -16,8 +16,8 @@ use crate::{
 const RATCHET_INTERVAL: u64 = 100;
 
 pub struct Session {
-    pub id:       [u8; 16],
-    keys:         Mutex<SessionKeys>,
+    pub id: [u8; 16],
+    keys: Mutex<SessionKeys>,
     send_counter: AtomicU64,
     recv_counter: AtomicU64,
 }
@@ -28,14 +28,14 @@ impl Session {
         OsRng.fill_bytes(&mut id);
         Self {
             id,
-            keys:         Mutex::new(keys),
+            keys: Mutex::new(keys),
             send_counter: AtomicU64::new(0),
             recv_counter: AtomicU64::new(0),
         }
     }
 
     pub fn send(&self, data: &[u8]) -> Result<MesstarPacket> {
-        let seq      = self.send_counter.fetch_add(1, Ordering::SeqCst);
+        let seq = self.send_counter.fetch_add(1, Ordering::SeqCst);
         let mut keys = self.keys.lock().unwrap();
 
         if seq > 0 && seq.is_multiple_of(RATCHET_INTERVAL) {
@@ -43,11 +43,9 @@ impl Session {
         }
 
         let (padded, pad_len) = pad(data);
-        let nonce      = generate_nonce();
+        let nonce = generate_nonce();
         let ciphertext = encrypt(&keys.send_key, &nonce, &padded)?;
-        let tag: [u8; 16] = ciphertext[ciphertext.len() - 16..]
-            .try_into()
-            .unwrap();
+        let tag: [u8; 16] = ciphertext[ciphertext.len() - 16..].try_into().unwrap();
 
         Ok(MesstarPacket::new(
             PacketType::Data,
@@ -69,9 +67,10 @@ impl Session {
         if packet.seq_num < expected {
             return Err(MesstarError::ReplayDetected);
         }
-        self.recv_counter.store(packet.seq_num + 1, Ordering::SeqCst);
+        self.recv_counter
+            .store(packet.seq_num + 1, Ordering::SeqCst);
 
-        let keys   = self.keys.lock().unwrap();
+        let keys = self.keys.lock().unwrap();
         let padded = decrypt(&keys.recv_key, &packet.nonce, &packet.payload)?;
 
         Ok(unpad(&padded, packet.pad_len))
