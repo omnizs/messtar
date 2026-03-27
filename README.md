@@ -20,7 +20,7 @@ Messtar is a custom, lightweight encryption protocol written in Rust, designed f
 ```toml
 [dependencies]
 # Core protocol
-messtar = "0.4.0"
+messtar = "0.4.2"
 
 # With async TCP transport layer
-messtar = { version = "0.4.0", features = ["transport"] }
+messtar = { version = "0.4.2", features = ["transport"] }
