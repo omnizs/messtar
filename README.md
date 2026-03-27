@@ -1,5 +1,10 @@
 # Messtar
 
+[![Crates.io Version](https://img.shields.io/crates/v/messtar?color=orange)](https://crates.io/crates/messtar)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/omnizs/messtar/rust.yml?branch=main&color=orange)](https://github.com/omnizs/messtar/actions)
+[![License](https://img.shields.io/crates/l/messtar?color=orange)](https://github.com/omnizs/messtar/blob/main/LICENSE)
+[![Last Commit](https://img.shields.io/github/last-commit/omnizs/messtar?color=orange)](https://github.com/omnizs/messtar/commits/main)
+
 Messtar is a custom, lightweight encryption protocol written in Rust, designed for secure end-to-end data transmission. It ensures confidentiality, integrity, and mutual authentication.
 
 ## Features
