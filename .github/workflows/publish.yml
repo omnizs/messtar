@@ -9,7 +9,7 @@ on:
 jobs:
   publish:
     name: Publish and Release
-    if: github.event.pull_request.merged == true && startsWith(github.head_ref, 'release/')
+    if: github.event.pull_request.merged == true && (startsWith(github.head_ref, 'release/') || startsWith(github.head_ref, 'hotfix/'))
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
