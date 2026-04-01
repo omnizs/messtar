@@ -10,10 +10,10 @@ Messtar is a custom, lightweight encryption protocol written in Rust, designed f
 ## Features
 
 - **Key Exchange:** X25519 Diffie-Hellman for perfect forward secrecy
-- **Key Derivation:** HKDF-SHA256
-- **Encryption:** AES-256-GCM
+- **Key Derivation:** HKDF-SHA256 with versioned labels
+- **Encryption:** AES-256-GCM via `aes-gcm` with `OsRng` nonce generation
 - **Authentication:** Ed25519 mutual identity verification during handshake
-- **Security:** Replay attack protection, strict packet freshness, and automatic key ratcheting
+- **Security:** Replay attack protection, strict packet freshness, automatic key ratcheting with rollback counter
 - **Packets:** Structured via `MesstarPacket` with versioning, nonce, authenticated payload, and padding
 - **Transport:** Optional async TCP layer built on `tokio` and `postcard`
 
@@ -22,10 +22,10 @@ Messtar is a custom, lightweight encryption protocol written in Rust, designed f
 ```toml
 [dependencies]
 # Core protocol
-messtar = "0.4.5"
+messtar = "0.5.0"
 
 # With async TCP transport layer
-messtar = { version = "0.4.5", features = ["transport"] }
+messtar = { version = "0.5.0", features = ["transport"] }
 ```
 
 ## Quick Start
@@ -52,8 +52,20 @@ assert_eq!(plaintext, b"hello");
 - **Perfect Forward Secrecy** — ephemeral X25519 keys per session; past sessions are not compromised if current keys leak
 - **Authenticated Encryption** — AES-256-GCM provides both encryption and tamper detection via GCM tag
 - **Replay Protection** — sliding window + sequence numbers reject duplicate or out-of-order packets
-- **Key Ratcheting** — session keys are ratcheted every 100 packets, limiting the impact of key exposure
-- **Memory Safety** — session keys are zeroed on drop via `zeroize`
+- **Key Ratcheting** — session keys are ratcheted every 100 packets with a rollback counter, limiting the impact of key exposure
+- **Memory Safety** — session keys and salt are zeroed on drop via `zeroize`
+- **Opaque Errors** — decryption failures return no oracle-exploitable detail
+
+## Releases
+
+Pre-built binaries for `demo` and `tcp_demo` are attached to each [GitHub Release](https://github.com/omnizs/messtar/releases):
+
+| Platform | File |
+|----------|------|
+| Linux x86-64 | `demo-linux`, `tcp_demo-linux` |
+| Windows x86-64 | `demo-windows.exe`, `tcp_demo-windows.exe` |
+| macOS x86-64 | `demo-macos`, `tcp_demo-macos` |
+| macOS ARM64 | `demo-macos-arm64`, `tcp_demo-macos-arm64` |
 
 ## License
 
