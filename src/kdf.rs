@@ -21,7 +21,7 @@ fn derive_key(master: &[u8], info: &[u8], salt: &[u8]) -> Zeroizing<[u8; 32]> {
 pub struct SessionKeys {
     pub send_key: Zeroizing<[u8; 32]>,
     pub recv_key: Zeroizing<[u8; 32]>,
-    // Salt stored for ratchet; cleared on drop via Zeroizing wrapper in SessionKeys::drop
+    // Salt stored for ratchet; cleared on drop via Zeroizing
     pub session_salt: Zeroizing<[u8; 16]>,
     // Ratchet counter for audit / anti-rollback
     pub ratchet_count: u32,
@@ -44,10 +44,8 @@ impl SessionKeys {
     }
 
     pub fn ratchet(&mut self) {
-        self.send_key =
-            derive_key(&*self.send_key, LABEL_RATCHET_SEND, &*self.session_salt);
-        self.recv_key =
-            derive_key(&*self.recv_key, LABEL_RATCHET_RECV, &*self.session_salt);
+        self.send_key = derive_key(&*self.send_key, LABEL_RATCHET_SEND, &*self.session_salt);
+        self.recv_key = derive_key(&*self.recv_key, LABEL_RATCHET_RECV, &*self.session_salt);
         self.ratchet_count = self.ratchet_count.saturating_add(1);
     }
 }
