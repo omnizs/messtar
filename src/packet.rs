@@ -22,6 +22,7 @@ pub struct MesstarPacket {
     pub packet_type: PacketType,
     pub session_id: [u8; 16],
     pub seq_num: u64,
+    pub ratchet_epoch: u32,
     pub timestamp: u64,
     pub nonce: [u8; 12],
     pub payload: Vec<u8>,
@@ -34,6 +35,7 @@ impl MesstarPacket {
         packet_type: PacketType,
         session_id: [u8; 16],
         seq_num: u64,
+        ratchet_epoch: u32,
         nonce: [u8; 12],
         payload: Vec<u8>,
         tag: [u8; 16],
@@ -41,13 +43,14 @@ impl MesstarPacket {
     ) -> Self {
         let timestamp = SystemTime::now()
             .duration_since(UNIX_EPOCH)
-            .unwrap()
+            .unwrap_or_default()
             .as_secs();
         Self {
             version: PROTOCOL_VERSION,
             packet_type,
             session_id,
             seq_num,
+            ratchet_epoch,
             timestamp,
             nonce,
             payload,
@@ -59,7 +62,7 @@ impl MesstarPacket {
     pub fn is_fresh(&self) -> bool {
         let now = SystemTime::now()
             .duration_since(UNIX_EPOCH)
-            .unwrap()
+            .unwrap_or_default()
             .as_secs();
         now.saturating_sub(self.timestamp) <= MAX_PACKET_AGE_SECS
     }
@@ -68,7 +71,7 @@ impl MesstarPacket {
 pub fn pad(data: &[u8]) -> (Vec<u8>, u8) {
     let pad_len = PADDING_BLOCK - (data.len() % PADDING_BLOCK);
     let mut padded = data.to_vec();
-    padded.extend(vec![0u8; pad_len]);
+    padded.extend(vec![pad_len as u8; pad_len]);
     (padded, pad_len as u8)
 }
 
