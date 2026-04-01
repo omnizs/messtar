@@ -30,32 +30,34 @@ pub struct MesstarPacket {
     pub pad_len: u8,
 }
 
+pub struct PacketParams {
+    pub packet_type: PacketType,
+    pub session_id: [u8; 16],
+    pub seq_num: u64,
+    pub ratchet_epoch: u32,
+    pub nonce: [u8; 12],
+    pub payload: Vec<u8>,
+    pub tag: [u8; 16],
+    pub pad_len: u8,
+}
+
 impl MesstarPacket {
-    pub fn new(
-        packet_type: PacketType,
-        session_id: [u8; 16],
-        seq_num: u64,
-        ratchet_epoch: u32,
-        nonce: [u8; 12],
-        payload: Vec<u8>,
-        tag: [u8; 16],
-        pad_len: u8,
-    ) -> Self {
+    pub fn new(p: PacketParams) -> Self {
         let timestamp = SystemTime::now()
             .duration_since(UNIX_EPOCH)
             .unwrap_or_default()
             .as_secs();
         Self {
             version: PROTOCOL_VERSION,
-            packet_type,
-            session_id,
-            seq_num,
-            ratchet_epoch,
+            packet_type: p.packet_type,
+            session_id: p.session_id,
+            seq_num: p.seq_num,
+            ratchet_epoch: p.ratchet_epoch,
             timestamp,
-            nonce,
-            payload,
-            tag,
-            pad_len,
+            nonce: p.nonce,
+            payload: p.payload,
+            tag: p.tag,
+            pad_len: p.pad_len,
         }
     }
 

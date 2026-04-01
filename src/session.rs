@@ -10,7 +10,7 @@ use crate::{
     cipher::{decrypt, encrypt, generate_nonce},
     error::{MesstarError, Result},
     kdf::SessionKeys,
-    packet::{pad, unpad, MesstarPacket, PacketType},
+    packet::{pad, unpad, MesstarPacket, PacketParams, PacketType},
 };
 
 const RATCHET_INTERVAL: u64 = 100;
@@ -43,7 +43,7 @@ impl Session {
         let seq = self.send_counter.fetch_add(1, Ordering::SeqCst);
         let mut keys = self.keys.lock().unwrap();
 
-        if seq > 0 && seq % RATCHET_INTERVAL == 0 {
+        if seq > 0 && seq.is_multiple_of(RATCHET_INTERVAL) {
             keys.ratchet();
             self.send_epoch.fetch_add(1, Ordering::SeqCst);
         }
@@ -54,16 +54,16 @@ impl Session {
         let ciphertext = encrypt(&keys.send_key, &nonce, &padded)?;
         let tag: [u8; 16] = ciphertext[ciphertext.len() - 16..].try_into().unwrap();
 
-        Ok(MesstarPacket::new(
-            PacketType::Data,
-            self.id,
-            seq,
-            epoch,
+        Ok(MesstarPacket::new(PacketParams {
+            packet_type: PacketType::Data,
+            session_id: self.id,
+            seq_num: seq,
+            ratchet_epoch: epoch,
             nonce,
-            ciphertext,
+            payload: ciphertext,
             tag,
             pad_len,
-        ))
+        }))
     }
 
     pub fn receive(&self, packet: &MesstarPacket) -> Result<Vec<u8>> {
