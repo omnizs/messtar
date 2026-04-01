@@ -2,7 +2,7 @@
 // Copyright (C) 2026 omnizs — Messtar Protocol
 
 use rand_core::{OsRng, RngCore};
-use std::sync::atomic::{AtomicU64, Ordering};
+use std::sync::atomic::{AtomicU32, AtomicU64, Ordering};
 use std::sync::Mutex;
 use zeroize::Zeroize;
 
@@ -14,23 +14,35 @@ use crate::{
 };
 
 const RATCHET_INTERVAL: u64 = 100;
+const WINDOW_SIZE: u64 = 64;
 
 pub struct Session {
     pub id: [u8; 16],
     keys: Mutex<SessionKeys>,
     send_counter: AtomicU64,
     recv_counter: AtomicU64,
+    recv_window: Mutex<u64>,
+    send_epoch: AtomicU32,
+    recv_epoch: Mutex<(u32, SessionKeys)>,
 }
 
 impl Session {
     pub fn new(keys: SessionKeys) -> Self {
         let mut id = [0u8; 16];
         OsRng.fill_bytes(&mut id);
+        let recv_keys_initial = SessionKeys::derive(
+            &keys.send_key.clone(),
+            keys.session_salt,
+            false,
+        );
         Self {
             id,
             keys: Mutex::new(keys),
             send_counter: AtomicU64::new(0),
             recv_counter: AtomicU64::new(0),
+            recv_window: Mutex::new(0u64),
+            send_epoch: AtomicU32::new(0),
+            recv_epoch: Mutex::new((0, recv_keys_initial)),
         }
     }
 
@@ -38,10 +50,12 @@ impl Session {
         let seq = self.send_counter.fetch_add(1, Ordering::SeqCst);
         let mut keys = self.keys.lock().unwrap();
 
-        if seq > 0 && seq.is_multiple_of(RATCHET_INTERVAL) {
+        if seq > 0 && seq % RATCHET_INTERVAL == 0 {
             keys.ratchet();
+            self.send_epoch.fetch_add(1, Ordering::SeqCst);
         }
 
+        let epoch = self.send_epoch.load(Ordering::SeqCst);
         let (padded, pad_len) = pad(data);
         let nonce = generate_nonce();
         let ciphertext = encrypt(&keys.send_key, &nonce, &padded)?;
@@ -51,6 +65,7 @@ impl Session {
             PacketType::Data,
             self.id,
             seq,
+            epoch,
             nonce,
             ciphertext,
             tag,
@@ -63,12 +78,29 @@ impl Session {
             return Err(MesstarError::PacketExpired);
         }
 
-        let expected = self.recv_counter.load(Ordering::SeqCst);
-        if packet.seq_num < expected {
+        let seq = packet.seq_num;
+        let mut window = self.recv_window.lock().unwrap();
+        let top = self.recv_counter.load(Ordering::SeqCst);
+
+        if seq + WINDOW_SIZE < top {
             return Err(MesstarError::ReplayDetected);
         }
-        self.recv_counter
-            .store(packet.seq_num + 1, Ordering::SeqCst);
+
+        if seq >= top {
+            if seq - top < WINDOW_SIZE {
+                *window = (*window << (seq - top + 1)) | 1;
+            } else {
+                *window = 1;
+            }
+            self.recv_counter.store(seq + 1, Ordering::SeqCst);
+        } else {
+            let bit = top - seq - 1;
+            let mask = 1u64 << bit;
+            if *window & mask != 0 {
+                return Err(MesstarError::ReplayDetected);
+            }
+            *window |= mask;
+        }
 
         let keys = self.keys.lock().unwrap();
         let padded = decrypt(&keys.recv_key, &packet.nonce, &packet.payload)?;
